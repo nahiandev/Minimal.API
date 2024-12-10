@@ -1,3 +1,5 @@
+using System;
+
 namespace Minimal.API
 {
     public class Program
@@ -8,8 +10,10 @@ namespace Minimal.API
 
             var app = builder.Build();
 
-            app.MapGet("/", () =>
+            app.MapGet("/", (HttpContext context) =>
             {
+                Console.WriteLine($"Request received at {context.Request.Path}");
+
                 return new
                 {
                     Name = "Alex",
@@ -25,10 +29,41 @@ namespace Minimal.API
                         State = "CA",
                         Zip = "12345"
                     },
-                    PreviousTechStack = new string[] { "C#", "SQL", "Azure" },
+                    TechnologyStack = new List<string> { "C#", "SQL", "Azure" },
 
                 };
             }).WithName("EmployeeRecord");
+
+
+            app.MapGet("/google", async (HttpContext context) => 
+            {
+                Console.WriteLine($"Request received at {context.Request.Path}");
+
+                const string url = @"https://google.com";
+
+                using HttpClient client = new();
+
+                HttpResponseMessage response = await client.GetAsync(url);
+
+                var success = response.EnsureSuccessStatusCode();
+
+                Console.WriteLine(success);
+
+                string html = await response.Content.ReadAsStringAsync();
+
+                response.Dispose();
+
+                return new
+                {
+                    html,
+                    success.StatusCode,
+                    
+                };
+
+            }).WithName("Google");
+
+
+            
 
             app.Run();
         }
